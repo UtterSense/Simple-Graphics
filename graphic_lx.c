@@ -3,19 +3,17 @@
                       (c) Copyright 2020 M.J. McGetrick
    DATE:
    DESCRIPTION:       Graphic_lx
-                      Suite of functions for implementing the Linux Turbo C graphics library:
-                      (Adapted from graphic.cpp class library for implementation on
-                       Borland Builder/Windows)
+                      Suite of functions for simple graph plotting using
+                      the Linux Turbo C graphics library.
+    
 ------------------------------------------------------------------------------*/
 #include "graphic_lx.h"
 
 
-//#include "global.hpp"
 #include <stdio.h>
 #include <math.h>
-//#include "wavetool.hpp"
 #include <string.h>
-//#include <graphics.h>  //Turbo C based graphics 
+
 
 //---------------------------------------------------------------------------
   void Graphic_Init(int xFormSize,int yFormSize,int pMode,int logMode,
