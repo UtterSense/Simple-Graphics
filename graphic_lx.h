@@ -2,18 +2,7 @@
 #ifndef GRAPHIC_HPP
 #define GRAPHIC_HPP
 
-//---------------------------------------------------------------------------
-//DEFINES
 
-
-//---------------------------------------------------------------------------
-//FUNCTION DECLARATIONS:
-
-
-/*
-#include "floatvec.hpp"
-#include "intmat.hpp"
-*/
 #include <stdbool.h>
 #include <graphics.h>  //Turbo C based graphics
 
@@ -23,14 +12,13 @@
                       (c) Copyright 2020 M.J. McGetrick
    DATE:
    DESCRIPTION:       Graphic_lx
-                      Suite of functions for implementing the Linux Turbo C graphics library:
-                      (Adapted from graphic.cpp class library for implementation on
-                       Borland Builder/Windows)
+                      Suite of functions for simple graph plotting using
+                      the Linux Turbo C graphics library.
+                      
+                       
 ------------------------------------------------------------------------------*/
 
-//---------------------------------------------------------------------------
-//DEFINE ATTRIBUTES:
-         
+//ATTRIBUTES:
          
          //Width/Height of GUI form
          int X_FORM_SIZE, Y_FORM_SIZE;  
@@ -59,8 +47,6 @@
                 
         bool show_ori_line;   
         bool showXGradLines, showYGradLines;  
-        
-        //Mono background color:
         
         
         
@@ -110,6 +96,7 @@
         //intmat m_iImageData;
         int m_iBitsPerPixel;
 
+//FUNCTION PROTOTYPES ---------------------------------------------------------
         
        void Graphic_Init(int xFormSize,int yFormSize, int pMode,int logMode,
                char *xlab, char *ylab, char *gphtitle,
