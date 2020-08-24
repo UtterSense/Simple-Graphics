@@ -47,7 +47,7 @@
    Graph 3 illustrates the display of a signal generated in real time from a signal generator,passing
    through a high pass filter, and sent by an Arduino Uno via UART to a Raspberry Pi. The display connected to 
    the Raspberry Pi shows this graph varying in real time. The display is useful as an additional oscilloscope
-   tool for analysing various signals on the development board. 
+   tool for analysing various signals on prototype development boards. 
       
 #### Graph 3
 ![Graph 3](images/trace.png)   	
