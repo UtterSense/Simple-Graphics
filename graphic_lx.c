@@ -64,7 +64,7 @@
    Bitmap = bitmap;
 
    //Define plot mode:
-   plotMode = pMode;  //0:line, 1:pixel, 2:circle, 3:rectangle
+   plotMode = pMode;  //0:line, 1:pixel, 2:circle, 3:rectangle, 4:triangle
    logPlotMode = logMode;  //0: default - no log plotting
                           //1: log plot: x axis
                           //2: log plot: y axis
@@ -405,23 +405,43 @@ void plotSig(float ySig, float xSig,int color)
    int xpixel = positionPixel(1,xmin,xmax,xSig,1);
    
    setcolor(color);
-   if(plotMode == 2)
+   if(plotMode == TRIANGLE_BORDER)
    {
-      //Image->Canvas->Ellipse(xpixel,ypixel,xpixel+cirSize,
-      //                        ypixel+cirSize);
-      circle(xpixel,ypixel,cirSize);                        
-   }
-   if(plotMode == 3)
+		triangle(xpixel,ypixel,cirSize,TRIANGLE_BORDER);	
+	}	
+	if(plotMode == TRIANGLE_FILLED)
    {
-      rectangle(xpixel,ypixel,xpixel+cirSize,ypixel+cirSize);                        
+		triangle(xpixel,ypixel,cirSize,TRIANGLE_FILLED);	
+	}	
+   if(plotMode == CIRCLE_BORDER)
+   {
+		circle(xpixel,ypixel,cirSize);
+		
+	}	
+   if(plotMode == CIRCLE_FILLED)
+   {
+      circle(xpixel,ypixel,cirSize);
+      floodfill(xpixel+1,ypixel+1,color);
+                            
    }
-   if(plotMode == 1)
+   if(plotMode == SQUARE_BORDER)
+   {
+      rectangle(xpixel-cirSize,ypixel-cirSize,xpixel+cirSize,ypixel+cirSize);
+                              
+   }
+   if(plotMode == SQUARE_FILLED)
+   {
+      rectangle(xpixel-cirSize,ypixel-cirSize,xpixel+cirSize,ypixel+cirSize);
+      floodfill(xpixel-cirSize+1,ypixel-cirSize+1,color);                        
+   }
+    
+   if(plotMode == PIXEL)
    {
       //int pixelSize = 1;
       moveto(xpixel,ypixel);
       lineto(xpixel,ypixel+1);
    }
-   if(plotMode == 0)
+   if(plotMode == LINE)
    {
       if(lineFlag>0)
       {
@@ -437,6 +457,23 @@ void plotSig(float ySig, float xSig,int color)
 }//plotSig  (for single screen plotting)
 
 
+//---------------------------------------------------------------------------
+void triangle(int x, int y, int size, int type)
+{
+	int a = (int) (2.0*size)/1.732;	
+	
+	//Define vertices of triangle:
+	int points[] = {x-a,y+size,x+a,y+size,x,y-size,x-a,y+size};
+	if(type == TRIANGLE_BORDER)
+	{
+		drawpoly(4,points);
+	}
+	if(type == TRIANGLE_FILLED)
+	{
+	  fillpoly(4,points);	
+	}
+	
+}	
 
 //---------------------------------------------------------------------------
 int positionPixel(int image,float ymin,float ymax,float sig,
@@ -745,8 +782,9 @@ void circleSize(int cSize)
 }
 
 
-void legendCaptions(struct leg_captions l_caps)
+void legendCaptions(struct leg_captions l_caps,int col)
 {
+      
    
    int left = 50;
    int top = 50;
@@ -754,17 +792,106 @@ void legendCaptions(struct leg_captions l_caps)
    //Write legend border:
    setcolor(4);
    rectangle(left-5,top-5,left+120,top+80);
+      
+      
    //Write captions:
-   setfontcolor(15);   
+   //setfontcolor(15);
+   setfontcolor(col);   
    //outtextxy(left,top,cap1);
    //outtextxy(left,top+20,cap2);
    outtextxy(left,top,l_caps.vmax_caption);
    outtextxy(left,top+20,l_caps.vmin_caption);
    outtextxy(left,top+40,l_caps.vavg_caption);
    outtextxy(left,top+60,l_caps.vpp_caption);
-
+	
+	
 
 }//legendCaptions
+
+
+//void legendCaptions1(struct leg_captions l_caps,int col,int numPlots,struct leg_symbols sym[])
+void legendCaptions1(int col,int numPlots,struct legend_info info[])
+{
+   //Set up captions with associated plot symbols:
+   //Last legend to a theoretical (line) -if required
+   //MAX of four  caption lines!!
+   
+   int left = 50;
+   int top = 50;
+   
+   //Write legend border:
+   int color = LIGHTGRAY; //7;
+   int sym_x_mar = 100;
+   
+   
+   setcolor(color);
+   rectangle(left-5,top-5,left+120,top+80);
+   
+   //color= 15;
+   //setcolor(color);
+   floodfill(left+10,top+10,color);  
+    
+      
+   //Set font color for caption text:
+   setfontcolor(col);   
+   
+   int ypos = 5;
+   for(int i=0;i<numPlots;i++)
+   {
+		//First Legend:
+		//outtextxy(left,top+ypos,l_caps.vmax_caption);
+		outtextxy(left,top+ypos,info[i].text);
+		//setcolor(1);
+		setcolor(info[i].color);
+		if(info[i].type == CIRCLE_BORDER)
+		{
+			circleSize(5);
+			circle(left+sym_x_mar+2,top+ypos+5,cirSize);
+		}
+		if(info[i].type == CIRCLE_FILLED)
+		{
+			circleSize(5);
+			circle(left+sym_x_mar+2,top+ypos+5,cirSize);
+			floodfill(left+sym_x_mar+2+1,top+ypos+5+1,info[i].color);
+		}
+		
+		if(info[i].type == SQUARE_BORDER)
+		{
+			circleSize(8);
+			rectangle(left+sym_x_mar-2,top+ypos,left+sym_x_mar+cirSize,top+ypos+cirSize);
+		}
+		if(info[i].type == SQUARE_FILLED)
+		{
+			circleSize(8);
+			rectangle(left+sym_x_mar-2,top+ypos,left+sym_x_mar+cirSize,top+ypos+cirSize);
+			floodfill(left+sym_x_mar-2+1,top+ypos+1,info[i].color);
+		}   
+		if(info[i].type == TRIANGLE_BORDER)
+		{
+			circleSize(5);
+			triangle(left+sym_x_mar+2,top+ypos+5,cirSize,TRIANGLE_BORDER);
+		}
+		if(info[i].type == TRIANGLE_FILLED)
+		{
+			circleSize(5);
+			triangle(left+sym_x_mar+2,top+ypos+5,cirSize,TRIANGLE_BORDER);
+			floodfill(left+sym_x_mar+2+1,top+ypos+5+1,info[i].color);
+		}
+		
+		
+		if(info[i].type == LINE)
+		{
+			
+			outtextxy(left+sym_x_mar-5,top+ypos,"----");
+		}
+		 ypos += 20;	
+			
+   }//i	
+   
+      
+
+}//legendCaptions1
+
 
 //---------------------------------------------------------------------------
 void legend(struct leg_data l_data,bool refresh)

@@ -49,6 +49,17 @@
         bool showXGradLines, showYGradLines;  
         
         
+        //PLOT MODE ENUMERATIONS
+        enum PlotModes{ LINE,
+			               PIXEL,
+			               CIRCLE_BORDER,
+			               CIRCLE_FILLED,
+			               SQUARE_BORDER,
+			               SQUARE_FILLED,
+			               TRIANGLE_BORDER,
+			               TRIANGLE_FILLED };
+	  
+		                 
         
         //LEGEND ATTRIBUTES
         struct leg_captions     //This can be expanded as and when required
@@ -59,6 +70,17 @@
                 char* vpp_caption;
         };           
 
+        
+        struct legend_info     //This can be expanded as and when required
+        {
+                int type;   //Data plot symbol
+                int color;  //Color for plot
+                char* text; //Caption fro this data
+                
+        };
+        
+        	  
+
         struct leg_data     //This can be expanded as and when required
         {
                 float vmax;    //Max. voltage
@@ -68,6 +90,9 @@
         };           
         struct leg_captions l_caps;
         struct leg_data l_data;
+
+
+
 
 
         //Audio player members:
@@ -120,6 +145,7 @@
         void tagOrigin(int image,int left, int posOrig);
         void graduations(int color); //Only for mono-trace
         void plotSig(float ySig, float xSig,int color);
+        void triangle(int x, int y, int size, int type); 
         int positionPixel(int image,float ymin,float ymax,float sig,int pixelMode);
         void pixelVerLine(int x, int pixelIncr);
         void pixelHorLine(int y, int pixelIncr);
@@ -136,7 +162,9 @@
         void xPlotIncr(int xincr);
         void circleSize(int cSize);
         void legend(struct leg_data l_data, bool refresh);
-        void legendCaptions(struct leg_captions l_caps); 
+        void legendCaptions(struct leg_captions l_caps,int col);
+        //void legendCaptions1(struct leg_captions l_caps,int col,int numPlots,struct leg_symbols sym[]);
+        void legendCaptions1(int col,int numPlots,struct legend_info info[]); 
         void axisDefaults(int xdivs,int ydivs,char *xspec, char *yspec);
         void setxMinLinear(int min);
         int getxMinLinear();
