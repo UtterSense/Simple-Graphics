@@ -827,7 +827,7 @@ void legendCaptions1(int col,int numPlots,struct legend_info info[])
    setcolor(color);
    rectangle(left-5,top-5,left+120,top+80);
    
-   //color= 15;
+   //color= LIGHTGRAY;
    //setcolor(color);
    floodfill(left+10,top+10,color);  
     
@@ -888,6 +888,12 @@ void legendCaptions1(int col,int numPlots,struct legend_info info[])
 			
    }//i	
    
+      
+    //Put border around the legend with another color:
+   setcolor(BLACK);
+   rectangle(left-5,top-5,left+120,top+80);
+   
+      
       
 
 }//legendCaptions1
