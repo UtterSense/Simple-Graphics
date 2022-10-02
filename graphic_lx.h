@@ -48,6 +48,12 @@
         bool show_ori_line;   
         bool showXGradLines, showYGradLines;  
         
+        // Width of a line plot in pixels
+        // Should be defined as an odd number (for plot symmetry)
+        // Even numbers shall be reduced by 1 in plot routine
+        int line_width;  
+        
+        
         
         //PLOT MODE ENUMERATIONS
         enum PlotModes{ LINE,
@@ -104,7 +110,6 @@
         int m_iSigUpper, m_iSigLower;
         bool m_bSigTrace,m_bSigRangeDefined;
 
-
         
         //frequency spectrum:
         int m_iFreqIndex;
@@ -126,9 +131,9 @@
        void Graphic_Init(int xFormSize,int yFormSize, int pMode,int logMode,
                char *xlab, char *ylab, char *gphtitle,
                float yMin, float yMax, float xMin, float xMax,
-               int xInt, int yInt, bool xGrad, bool yGrad,
+               int xInt, int yInt, bool xGrad, bool yGrad, int XAxisPrec, int YAxisPrec,
                bool grid, int gInt,
-               bool xshow,bool yshow,bool ori, bool bitmap,
+               bool xshow,bool yshow,bool ori, int ori_color,bool bitmap,
                int monobcolor,char *audfile, char *audInifile,
                int chans,int samrate, int bps);
         
@@ -152,7 +157,7 @@
         void xAxisScale(); //Only for mono-trace
         void yAxisScale(); //Only for mono-trace
         void axisScales();
-        void drawOriginLine();
+        void drawVerticalMarker(float pos, int color, int width);
         void setupGrid(int xInt, int yInt);
         void verLines(int xInterval);
         void horLines(int yInterval);
@@ -161,10 +166,11 @@
         void changeLogPlotMode(int p);
         void xPlotIncr(int xincr);
         void circleSize(int cSize);
+        void lineWidth(int width); 
         void legend(struct leg_data l_data, bool refresh);
         void legendCaptions(struct leg_captions l_caps,int col);
         //void legendCaptions1(struct leg_captions l_caps,int col,int numPlots,struct leg_symbols sym[]);
-        void legendCaptions1(int col,int numPlots,struct legend_info info[]); 
+        void legendCaptions1(int col,int bck_color,int numPlots,struct legend_info info[],int left, int top,int width,int height); 
         void axisDefaults(int xdivs,int ydivs,char *xspec, char *yspec);
         void setxMinLinear(int min);
         int getxMinLinear();
@@ -181,7 +187,7 @@
         float getXValFromPixPos(int npixels);
         void plotVerLine(float ySig,float xSig);
         void initialisePizPos();
-                                
+                                        
         
 //---------------------------------------------------------------------------
 #endif
