@@ -19,12 +19,15 @@
   void Graphic_Init(int xFormSize,int yFormSize,int pMode,int logMode,
                char *xlab, char *ylab, char *gphtitle,
                float yMin, float yMax, float xMin, float xMax,
-               int xInt, int yInt, bool xGrad, bool yGrad,
+               int xInt, int yInt, bool xGrad, bool yGrad, int XAxisPrec, int YAxisPrec,
                bool grid, int gInt,
-               bool xshow,bool yshow,bool ori, bool bitmap,
+               bool xshow,bool yshow,bool ori, int ori_color, bool bitmap,
                int monobcolor,char *audfile, char *audInifile,
                int chans,int samrate, int bps)
 {
+   
+   
+     
    
    //Initialise Turbo C Graphics Library
    int gd = DETECT,gm;
@@ -70,8 +73,8 @@
                           //2: log plot: y axis
                           //3: log plot: x and y axis
 
-
-   
+        
+      
    image = 1;
 
    
@@ -146,8 +149,19 @@
 
     
   counter1 = 0.0;
-  strcpy(xfield,"5.1");
-  strcpy(yfield,"5.1");
+  
+  // Define decimal precision for number labelling on x and axes:
+  char prec = XAxisPrec + '0';
+  xfield[0] = '5';
+  xfield[1] = '.';
+  xfield[2] = prec;
+  
+  prec = YAxisPrec + '0';
+  yfield[0] = '5';
+  yfield[1] = '.';
+  yfield[2] = prec;
+  
+    
   //Draw graduations:
   if(showGrid)
   {
@@ -162,6 +176,10 @@
   }
   
       
+  // Set default for the line width plot (in pixels)
+  line_width = 1;    
+  lineFlag = 0; //Initiliase for start of line plots
+  
       
   //Draw axis scales:
   if(!Bitmap) axisScales();
@@ -171,14 +189,7 @@
   
   if(show_ori_line)
   {
-      if(m_cMonoBackCol == 0)
-      {
-         setcolor(15);
-      }
-      if(m_cMonoBackCol == 15)
-      {
-         setcolor(0);
-      }   
+      setcolor(ori_color);   
       drawOriginLine();
   }    
        
@@ -437,7 +448,6 @@ void plotSig(float ySig, float xSig,int color)
     
    if(plotMode == PIXEL)
    {
-      //int pixelSize = 1;
       moveto(xpixel,ypixel);
       lineto(xpixel,ypixel+1);
    }
@@ -445,8 +455,20 @@ void plotSig(float ySig, float xSig,int color)
    {
       if(lineFlag>0)
       {
-         moveto(sigStore1,sigStore2);
-         lineto(xpixel,ypixel);
+         // Check we have an odd number (for symmetry)
+         if ( (line_width % 2) == 0 )
+         {
+				// Reduce width by 1 pixel
+				line_width -= 1;	
+			}	
+         int span = (line_width - 1) / 2.0;
+         
+         for(int i = -span; i < span+1; i++)
+			{
+				moveto(sigStore1+i,sigStore2+i);
+				lineto(xpixel+i,ypixel+i);
+			}
+				
       }
       sigStore1 = xpixel;
       sigStore2 = ypixel;
@@ -456,6 +478,12 @@ void plotSig(float ySig, float xSig,int color)
 
 }//plotSig  (for single screen plotting)
 
+
+//---------------------------------------------------------------------------
+void lineWidth(int width)
+{
+	line_width = width;
+}
 
 //---------------------------------------------------------------------------
 void triangle(int x, int y, int size, int type)
@@ -624,8 +652,8 @@ void xAxisScale()
             int x = positionPixel(1,xmin,xmax,pos,1);
             sprintf(floatnumtext,field,pos);
             x = x-30;
-            outtextxy(x+15,horPos+25,floatnumtext);
-            pos += interval;
+				outtextxy(x+15,horPos+25,floatnumtext);
+				pos += interval;
 
          }//i
 
@@ -633,6 +661,7 @@ void xAxisScale()
    }//if(ShowXAxisNums)
 
 }//xAxisScale
+
 
 //---------------------------------------------------------------------------
 void yAxisScale()
@@ -695,6 +724,44 @@ void drawOriginLine()
   }
   
 }//drawOriginLine
+
+
+//---------------------------------------------------------------------------
+void drawVerticalMarker(float pos, int color,int width)
+{
+	
+	//int width: 0: standard 1 pixel; 1: 3 pixel width
+		 
+	// Draws a vertical marker line at the requested postion
+	if(logPlotMode == 0 || logPlotMode == 2)
+  	{      
+      if ((pos >= xmin) && (pos <= xmax))
+      { 
+			C1 = ( (pos-xmin) / (xmax-xmin) )* (right-left);
+			C1 = C1 + xmargin;  //Add margin offset
+			
+			setcolor(color);
+						
+			// Check we have an odd number (for symmetry)
+         if ( (width % 2) == 0 )
+         {
+				// Reduce width by 1 pixel
+				width -= 1;	
+			}	
+         int span = (width - 1) / 2.0;
+         
+         for(int i = -span; i < span+1; i++)
+			{
+				moveto(C1+i,top);
+				lineto(C1+i,bottom);
+			}
+						
+		}
+      
+   }
+	
+	
+}// drawVerticalMarker	
 
 //---------------------------------------------------------------------------
 void setupGrid(int xInterval,int yInterval)
@@ -761,6 +828,7 @@ void setLinePlotFlag(int flg)
 void changePlotMode(int p) 
 {
    plotMode = p;
+   setLinePlotFlag(0); //Ensure we star anew for line plots
 }
 
 //---------------------------------------------------------------------------
@@ -810,22 +878,21 @@ void legendCaptions(struct leg_captions l_caps,int col)
 
 
 //void legendCaptions1(struct leg_captions l_caps,int col,int numPlots,struct leg_symbols sym[])
-void legendCaptions1(int col,int numPlots,struct legend_info info[])
+void legendCaptions1(int col,int bck_col,int numPlots,struct legend_info info[], int left, int top,int width,int height)
 {
    //Set up captions with associated plot symbols:
    //Last legend to a theoretical (line) -if required
    //MAX of four  caption lines!!
    
-   int left = 50;
-   int top = 50;
+   //int left = 100;
+   //int top = 50;
    
    //Write legend border:
-   int color = LIGHTGRAY; //7;
-   int sym_x_mar = 100;
-   
+   int color = bck_col; //7;
+      
    
    setcolor(color);
-   rectangle(left-5,top-5,left+120,top+80);
+   rectangle(left-5,top-5,left+width,top+height);
    
    //color= LIGHTGRAY;
    //setcolor(color);
@@ -846,43 +913,46 @@ void legendCaptions1(int col,int numPlots,struct legend_info info[])
 		if(info[i].type == CIRCLE_BORDER)
 		{
 			circleSize(5);
-			circle(left+sym_x_mar+2,top+ypos+5,cirSize);
+			circle(left+(width-20),top+ypos+5,cirSize);
 		}
 		if(info[i].type == CIRCLE_FILLED)
 		{
 			circleSize(5);
-			circle(left+sym_x_mar+2,top+ypos+5,cirSize);
-			floodfill(left+sym_x_mar+2+1,top+ypos+5+1,info[i].color);
+			circle(left+(width-20),top+ypos+5,cirSize);
+			floodfill(left+(width-20)+1,top+ypos+5+1,info[i].color);
 		}
 		
 		if(info[i].type == SQUARE_BORDER)
 		{
 			circleSize(8);
-			rectangle(left+sym_x_mar-2,top+ypos,left+sym_x_mar+cirSize,top+ypos+cirSize);
+			rectangle(left+(width-20),top+ypos,left+(width-20)+cirSize,top+ypos+cirSize);
 		}
 		if(info[i].type == SQUARE_FILLED)
 		{
 			circleSize(8);
-			rectangle(left+sym_x_mar-2,top+ypos,left+sym_x_mar+cirSize,top+ypos+cirSize);
-			floodfill(left+sym_x_mar-2+1,top+ypos+1,info[i].color);
+			rectangle(left+(width-20),top+ypos,left+(width-20)+cirSize,top+ypos+cirSize);
+			floodfill(left+(width-20)+1,top+ypos+1,info[i].color);
 		}   
 		if(info[i].type == TRIANGLE_BORDER)
 		{
 			circleSize(5);
-			triangle(left+sym_x_mar+2,top+ypos+5,cirSize,TRIANGLE_BORDER);
+			triangle(left+(width-20),top+ypos+5,cirSize,TRIANGLE_BORDER);
 		}
 		if(info[i].type == TRIANGLE_FILLED)
 		{
 			circleSize(5);
-			triangle(left+sym_x_mar+2,top+ypos+5,cirSize,TRIANGLE_BORDER);
-			floodfill(left+sym_x_mar+2+1,top+ypos+5+1,info[i].color);
+			triangle(left+(width-20),top+ypos+5,cirSize,TRIANGLE_BORDER);
+			floodfill(left+(width-20)+1,top+ypos+5+1,info[i].color);
 		}
 		
 		
 		if(info[i].type == LINE)
 		{
-			
-			outtextxy(left+sym_x_mar-5,top+ypos,"----");
+			int font_color = getfontcolor();
+			setfontcolor(info[i].color);
+			outtextxy(left+(width-20)-10,top+ypos,"----");
+			//Revert back to previous font color;
+			setfontcolor(font_color);
 		}
 		 ypos += 20;	
 			
@@ -891,7 +961,7 @@ void legendCaptions1(int col,int numPlots,struct legend_info info[])
       
     //Put border around the legend with another color:
    setcolor(BLACK);
-   rectangle(left-5,top-5,left+120,top+80);
+   rectangle(left-5,top-5,left+width,top+height);
    
       
       
