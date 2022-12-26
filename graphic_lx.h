@@ -70,10 +70,11 @@
         //LEGEND ATTRIBUTES
         struct leg_captions     //This can be expanded as and when required
         {
-                char* vmax_caption;
-                char* vmin_caption;
-                char* vavg_caption;
-                char* vpp_caption;
+                char* data1_caption;
+                char* data2_caption;
+                char* data3_caption;
+                char* data4_caption;
+                
         };           
 
         
@@ -81,7 +82,7 @@
         {
                 int type;   //Data plot symbol
                 int color;  //Color for plot
-                char* text; //Caption fro this data
+                char* text; //Caption for this data
                 
         };
         
@@ -89,10 +90,15 @@
 
         struct leg_data     //This can be expanded as and when required
         {
-                float vmax;    //Max. voltage
-                float vmin;    //Min voltage
-                float vavg;    //Mean voltage
-                float vpp;     //Peak to peak voltage 
+                float data1;    
+                float data2;    
+                float data3;  
+                float data4; 
+                char *data1_unit;
+                char *data2_unit;
+                char *data3_unit;
+                char *data4_unit;   
+                 
         };           
         struct leg_captions l_caps;
         struct leg_data l_data;
@@ -167,8 +173,8 @@
         void xPlotIncr(int xincr);
         void circleSize(int cSize);
         void lineWidth(int width); 
-        void legend(struct leg_data l_data, bool refresh);
-        void legendCaptions(struct leg_captions l_caps,int col);
+        void legend(struct leg_data l_data, bool refresh, int numBoxes,int color, int leg_left, int leg_top);
+        void legendCaptions(struct leg_captions l_caps,int col, int numBoxes, int leg_left, int leg_top);
         //void legendCaptions1(struct leg_captions l_caps,int col,int numPlots,struct leg_symbols sym[]);
         void legendCaptions1(int col,int bck_color,int numPlots,struct legend_info info[],int left, int top,int width,int height); 
         void axisDefaults(int xdivs,int ydivs,char *xspec, char *yspec);
