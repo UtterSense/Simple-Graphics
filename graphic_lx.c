@@ -88,6 +88,7 @@
    //Set  axis numbering defaults:
    showXAxisNums = xshow;
    showYAxisNums = yshow;
+   
 
    //Set title:
    strcpy(Title,gphtitle);
@@ -102,8 +103,10 @@
    ynoDivs = yInt;
 
    showGrid = grid;
-   showXGradLines = xshow;
-   showYGradLines = yshow;
+   //showXGradLines = xshow;
+   //showYGradLines = yshow;
+	showXGradLines = xGrad;
+   showYGradLines = yGrad;
 
    if(logPlotMode == 1)
    {
@@ -165,13 +168,13 @@
   //Draw graduations:
   if(showGrid)
   {
-      if(m_cMonoBackCol == 0)
+      if(m_cMonoBackCol == BLACK)
       {
-         graduations(15);
+         graduations(DARKGRAY);
       }
-      if(m_cMonoBackCol == 15)
+      if(m_cMonoBackCol == WHITE)
       {
-         graduations(0);
+         graduations(BLACK);
       }   
   }
   
@@ -264,7 +267,7 @@ void title(char *text)
    int horPos = top-25;
    
    //Print graph title 
-   setfontcolor(0);
+   setfontcolor(DARKGRAY);
    outtextxy(centralPos,horPos,text);
 
 }//title
@@ -279,7 +282,7 @@ void xAxisText(int image,char *text)
    int horPos = bottom1+18;
    
    //Print x axis label 
-   setfontcolor(0);
+   setfontcolor(DARKGRAY);
    outtextxy(centralPos,horPos,text);
 
 
@@ -298,7 +301,7 @@ void yAxisText(int image,char *text)
       //Print y axis label
       char str[2];
       str[1] = '\0';
-      setfontcolor(0);
+      setfontcolor(DARKGRAY);
       for(int i=0;i<strlen(text);i++)
       {
          str[0] = text[i];
@@ -623,7 +626,7 @@ void xAxisScale()
       sprintf(numtext,"%d",10);
       int horPos = (bottom-top)+14;
 
-      setfontcolor(0);
+      setfontcolor(DARKGRAY);
       //Obtain x axis scale:
       if(logPlotMode == 1 || logPlotMode == 3)
       {
@@ -674,7 +677,7 @@ void yAxisScale()
       sprintf(numtext,"%d",10);
       int verPos = left-85;
 
-      setfontcolor(0);
+      setfontcolor(DARKGRAY);
       //Obtain y axis scale:
       if(logPlotMode == 2 || logPlotMode == 3)
       {
@@ -850,42 +853,67 @@ void circleSize(int cSize)
 }
 
 
-void legendCaptions(struct leg_captions l_caps,int col)
+
+// This function to be used in animated plots (e.g. oscilloscope)
+// where information can be updated in real time.
+// Each box contains a single item with caption and data.
+// This function provides the legend captions.
+// Provides up to four legend boxes side by side.
+// To be used with the legend(.) function which provides the data.  
+void legendCaptions(struct leg_captions l_caps,int col, int numBoxes, int leg_left, int leg_top)
 {
-      
    
-   int left = 50;
-   int top = 50;
+   int left = leg_left;
+   int top = leg_top;
    
-   //Write legend border:
-   setcolor(4);
-   rectangle(left-5,top-5,left+120,top+80);
-      
-      
-   //Write captions:
-   //setfontcolor(15);
-   setfontcolor(col);   
-   //outtextxy(left,top,cap1);
-   //outtextxy(left,top+20,cap2);
-   outtextxy(left,top,l_caps.vmax_caption);
-   outtextxy(left,top+20,l_caps.vmin_caption);
-   outtextxy(left,top+40,l_caps.vavg_caption);
-   outtextxy(left,top+60,l_caps.vpp_caption);
-	
+   
+   for(int i = 0; i < numBoxes; i++)
+   {
+		
+		setcolor(LIGHTGRAY);
+		rectangle(left-5,top-5,left+139,top+15);	
+		
+		
+		int arr[] = {left-5+1,top-5+1, left+139+1,top-5+1, 
+					    left+139+1,top+15-1,left-5+1,top+15-1,left-5+1,top-5+1};
+   	setcolor(BLACK);
+   	fillpoly(5, arr);	
+   	
+		
+		//Write captions:
+		setfontcolor(col);
+		if ( i == 0) 
+		{
+			outtextxy(left,top,l_caps.data1_caption);	
+		}  
+		else if (i == 1)
+		{
+			outtextxy(left,top,l_caps.data2_caption);		
+		}
+		else if ( i == 2)
+		{
+			outtextxy(left,top,l_caps.data3_caption);	
+		}	
+		else if (i == 3)
+		{
+			outtextxy(left,top,l_caps.data4_caption);	
+		}	
+		
+		
+		left += 144;  
+   }
 	
 
 }//legendCaptions
 
 
-//void legendCaptions1(struct leg_captions l_caps,int col,int numPlots,struct leg_symbols sym[])
+
+// Legend function to be used for non-animated plots
 void legendCaptions1(int col,int bck_col,int numPlots,struct legend_info info[], int left, int top,int width,int height)
 {
    //Set up captions with associated plot symbols:
    //Last legend to a theoretical (line) -if required
    //MAX of four  caption lines!!
-   
-   //int left = 100;
-   //int top = 50;
    
    //Write legend border:
    int color = bck_col; //7;
@@ -970,51 +998,226 @@ void legendCaptions1(int col,int bck_col,int numPlots,struct legend_info info[],
 
 
 //---------------------------------------------------------------------------
-void legend(struct leg_data l_data,bool refresh)
+// To be used with animated plots (in association with legendCaptions(.))
+void legend(struct leg_data l_data,bool refresh, int numBoxes, int color, int leg_left, int leg_top)
 {
    
    //NB: If working for non animating graph, refresh is set to zero
    
-   char cap1[30], cap2[30], cap3[30], cap4[30];;
-
-     
-   sprintf(cap1,"%5.2f",l_data.vmax);
-   sprintf(cap2,"%5.2f",l_data.vmin);
-   sprintf(cap3,"%5.2f",l_data.vavg);
-   sprintf(cap4,"%5.2f",l_data.vpp);
-      
-   int left = 50;
-   int top = 50;
-
-   
-   /*
-   //Refresh background before writing current data (needed for animated graphics):
-   int color = m_cMonoBackCol; //Background color
-   setcolor(color);
-   //rectangle(xmargin,ymargin,X_FORM_SIZE-xmargin,Y_FORM_SIZE-ymargin);
-   rectangle(left+55,top,left+93,top+32);
-   //Set fill color:
-   floodfill(left+55+1, top+32-1,color);   
-    */
+   char cap1[30], cap2[30], cap3[30], cap4[30];
+	         
+	int left = leg_left + 4;
+   int top = leg_top + 2;
     
-    if(refresh)  //Repaint to background previous value  
-    {
+    
+   if(refresh)  //Repaint to background previous value  
+   {
        setfontcolor(m_cMonoBackCol);
        
-    }  
-    else
-    {       
-          setfontcolor(3); //10-light green; 5-Magenta
-    }      
+   }  
+   else
+   {       
+          setfontcolor(color); //10-light green; 5-Magenta
+   }      
       
-   //Output vmax
-   outtextxy(left+50,top,cap1);  
-   //Output vmin
-   outtextxy(left+50,top+20,cap2);
-   //Ouput vavg:
-   outtextxy(left+50,top+40,cap3);
-   //Output vpp:
-   outtextxy(left+50,top+60,cap4);     
+   int shift = 0;
+   int data_width = 132;
+   int top_high = top + 8;
+   int top_low = top - 4;
+   int left_start = left+45;
+   
+   setcolor (BLACK);
+   float data;
+   for(int i=0; i < numBoxes;i++)
+   {
+   
+		if (i == 0)
+		{
+			
+   	   int arr[] = {shift+left_start,top_low, shift+left+data_width,top_low, 
+					       shift+left+data_width,top_high,  shift+left_start,top_high,shift+left_start,top_low};
+   		fillpoly(5, arr);	
+   	   if (isnan(l_data.data1))
+   	   {
+				sprintf(cap1,"%s  %s","XXXX",l_data.data1_unit);
+			} 
+   	   else
+   	   {  	   
+   	   
+				if ( (l_data.data1 == 0.0))
+				{ 
+					data = l_data.data1;
+					sprintf(cap1,"%5d  %s",(int) data,l_data.data1_unit);
+				}
+				if ( (l_data.data1 < 1.0) && (l_data.data1 > 1.0e-3))
+				{ 
+					
+					data = l_data.data1 * 1000;
+					sprintf(cap1,"%5.2f  %c%s", data,'m',l_data.data1_unit);
+				}
+				else if ( (l_data.data1 >= 1.0) && (l_data.data1 < 1.0e3))
+				{ 
+					data = l_data.data1;
+					sprintf(cap1,"%5.2f  %s",data,l_data.data1_unit);
+				}
+				else if ( (l_data.data1 >= 1.0e3) && (l_data.data1 < 1.0e6))
+				{ 
+					data = l_data.data1 / 1000;
+					sprintf(cap1,"%5.2f  %c%s",data,'k',l_data.data1_unit);
+				}
+				else if ( l_data.data1 >= 1.0e6)
+				{ 
+					data = l_data.data1 / 1000000;
+					sprintf(cap1,"%5.2f  %c%s",data,'M',l_data.data1_unit);
+				}
+			} 
+			  	      	   	
+			outtextxy(left+shift+50,top-2,cap1);  
+		}
+		else if (i == 1)
+		{
+			
+			int arr[] = {shift+left_start,top_low, shift+left+data_width,top_low, 
+					       shift+left+data_width,top_high,  shift+left_start,top_high,shift+left_start,top_low};
+   		fillpoly(5, arr);	
+   	   
+   	   if (isnan(l_data.data2))
+   	   {
+				sprintf(cap2,"%s  %s","XXXX",l_data.data2_unit);
+			}   	
+			else
+			{     	      	      	   	   
+				if ( (l_data.data2 == 0.0))
+				{ 
+					data = l_data.data2;
+					sprintf(cap2,"%5d  %s",(int) data,l_data.data2_unit);
+				}
+				else if ( (l_data.data2 < 1.0) && (l_data.data2 > 1.0e-3))
+				{ 
+					
+					data = l_data.data2 * 1000;
+					sprintf(cap2,"%5.2f  %c%s", data,'m',l_data.data2_unit);
+				}
+				else if ( (l_data.data2 >= 1.0) && (l_data.data2 < 1.0e3))
+				{ 
+					data = l_data.data2;
+					sprintf(cap2,"%5.2f  %s",data,l_data.data2_unit);
+				}
+				else if ( (l_data.data2 >= 1.0e3) && (l_data.data2 < 1.0e6))
+				{ 
+					data = l_data.data2 / 1000;
+					sprintf(cap2,"%5.2f  %c%s",data,'k',l_data.data2_unit);
+				}
+				else if ( l_data.data2 >= 1.0e6)
+				{ 
+					data = l_data.data2 / 1000000;
+					sprintf(cap2,"%5.2f  %c%s",data,'M',l_data.data2_unit);
+				}			
+			}
+			//Output data2
+			outtextxy(left+shift+50,top-2,cap2);
+			
+			
+		}
+		else if (i == 2)
+		{
+						
+			int arr[] = {shift+left_start,top_low, shift+left+data_width,top_low, 
+					       shift+left+data_width,top_high,  shift+left_start,top_high,shift+left_start,top_low};
+   		fillpoly(5, arr);	
+   	   
+			if (isnan(l_data.data3))
+   	   {
+				sprintf(cap3,"%s  %s","XXXX",l_data.data3_unit);
+			}
+			else
+			{			
+						
+				if ( (l_data.data3 == 0.0))
+				{ 
+					data = l_data.data3;
+					sprintf(cap3,"%5d  %s",(int) data,l_data.data3_unit);
+				}
+				else if ( (l_data.data3 < 1.0) && (l_data.data3 > 1.0e-3))
+				{ 
+					
+					data = l_data.data3 * 1000;
+					sprintf(cap3,"%5.2f  %c%s", data,'m',l_data.data3_unit);
+				}
+				else if ( (l_data.data3 >= 1.0) && (l_data.data3 < 1.0e3))
+				{ 
+					data = l_data.data3;
+					sprintf(cap3,"%5.2f  %s",data,l_data.data3_unit);
+				}
+				else if ( (l_data.data3 >= 1.0e3) && (l_data.data3 < 1.0e6))
+				{ 
+					data = l_data.data3 / 1000;
+					sprintf(cap3,"%5.2f  %c%s",data,'k',l_data.data3_unit);
+				}
+				else if ( l_data.data3 >= 1.0e6)
+				{ 
+					data = l_data.data3 / 1000000;
+					sprintf(cap3,"%5.2f  %c%s",data,'M',l_data.data3_unit);
+				}
+		   }
+		   								
+			//Ouput data3:
+			outtextxy(left+shift+50,top-2,cap3);
+			
+		}
+		else if (i == 3)
+		{
+			
+			
+   	   int arr[] = {shift+left_start,top_low, shift+left+data_width,top_low, 
+					       shift+left+data_width,top_high,  shift+left_start,top_high,shift+left_start,top_low};
+   		fillpoly(5, arr);	
+   	   
+   	   
+   	   if (isnan(l_data.data4))
+   	   {
+				sprintf(cap4,"%s  %s","XXXX",l_data.data4_unit);
+			}
+			else
+			{	
+			
+				if ( (l_data.data4 == 0.0))
+				{ 
+					data = l_data.data4;
+					sprintf(cap4,"%5d  %s",(int) data,l_data.data4_unit);
+				}
+				else if ( (l_data.data4 < 1.0) && (l_data.data4 > 1.0e-3))
+				{ 
+					data = l_data.data4 * 1000;
+					sprintf(cap4,"%5.2f  %c%s", data,'m',l_data.data4_unit);
+				}
+				else if ( (l_data.data4 >= 1.0) && (l_data.data4 < 1.0e3))
+				{ 
+					data = l_data.data4;
+					sprintf(cap4,"%5.2f  %s",data,l_data.data4_unit);
+				}
+				else if ( (l_data.data4 >= 1.0e3) && (l_data.data4 < 1.0e6))
+				{ 
+					data = l_data.data4 / 1000;
+					sprintf(cap4,"%5.2f  %c%s",data,'k',l_data.data4_unit);
+				}
+				else if ( l_data.data4 >= 1.0e6)
+				{ 
+					data = l_data.data4 / 1000000;
+					sprintf(cap4,"%5.2f  %c%s",data,'M',l_data.data4_unit);
+				}
+			}			
+   	   
+			//Output data4:
+			outtextxy(left+shift+50,top-2,cap4);
+				
+		}	
+		
+		
+		shift += 144;     
+   }
+   
+   
    
 
 }//legend
