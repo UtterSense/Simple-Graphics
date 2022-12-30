@@ -1037,6 +1037,7 @@ void legend(struct leg_data l_data,bool refresh, int numBoxes, int color, int le
    	   int arr[] = {shift+left_start,top_low, shift+left+data_width,top_low, 
 					       shift+left+data_width,top_high,  shift+left_start,top_high,shift+left_start,top_low};
    		fillpoly(5, arr);	
+   	   
    	   if (isnan(l_data.data1))
    	   {
 				sprintf(cap1,"%s  %s","XXXX",l_data.data1_unit);
@@ -1044,12 +1045,12 @@ void legend(struct leg_data l_data,bool refresh, int numBoxes, int color, int le
    	   else
    	   {  	   
    	   
-				if ( (l_data.data1 == 0.0))
+				if ( (l_data.data1 <= 0.0))
 				{ 
 					data = l_data.data1;
-					sprintf(cap1,"%5d  %s",(int) data,l_data.data1_unit);
+					sprintf(cap1,"%5.2f  %s", data,l_data.data1_unit);
 				}
-				if ( (l_data.data1 < 1.0) && (l_data.data1 > 1.0e-3))
+				else if ( (l_data.data1 < 1.0) && (l_data.data1 > 1.0e-3))
 				{ 
 					
 					data = l_data.data1 * 1000;
@@ -1070,8 +1071,8 @@ void legend(struct leg_data l_data,bool refresh, int numBoxes, int color, int le
 					data = l_data.data1 / 1000000;
 					sprintf(cap1,"%5.2f  %c%s",data,'M',l_data.data1_unit);
 				}
-			} 
-			  	      	   	
+			}
+						  	      	   	
 			outtextxy(left+shift+50,top-2,cap1);  
 		}
 		else if (i == 1)
@@ -1087,10 +1088,10 @@ void legend(struct leg_data l_data,bool refresh, int numBoxes, int color, int le
 			}   	
 			else
 			{     	      	      	   	   
-				if ( (l_data.data2 == 0.0))
+				if ( (l_data.data2 <= 0.0))
 				{ 
 					data = l_data.data2;
-					sprintf(cap2,"%5d  %s",(int) data,l_data.data2_unit);
+					sprintf(cap2,"%5.2f  %s",data,l_data.data2_unit);
 				}
 				else if ( (l_data.data2 < 1.0) && (l_data.data2 > 1.0e-3))
 				{ 
@@ -1133,10 +1134,10 @@ void legend(struct leg_data l_data,bool refresh, int numBoxes, int color, int le
 			else
 			{			
 						
-				if ( (l_data.data3 == 0.0))
+				if ( (l_data.data3 <= 0.0))
 				{ 
 					data = l_data.data3;
-					sprintf(cap3,"%5d  %s",(int) data,l_data.data3_unit);
+					sprintf(cap3,"%5.2f  %s", data,l_data.data3_unit);
 				}
 				else if ( (l_data.data3 < 1.0) && (l_data.data3 > 1.0e-3))
 				{ 
@@ -1181,10 +1182,10 @@ void legend(struct leg_data l_data,bool refresh, int numBoxes, int color, int le
 			else
 			{	
 			
-				if ( (l_data.data4 == 0.0))
+				if ( (l_data.data4 <= 0.0))
 				{ 
 					data = l_data.data4;
-					sprintf(cap4,"%5d  %s",(int) data,l_data.data4_unit);
+					sprintf(cap4,"%5.2f  %s",data,l_data.data4_unit);
 				}
 				else if ( (l_data.data4 < 1.0) && (l_data.data4 > 1.0e-3))
 				{ 
