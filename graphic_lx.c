@@ -736,32 +736,36 @@ void drawVerticalMarker(float pos, int color,int width)
 	//int width: 0: standard 1 pixel; 1: 3 pixel width
 		 
 	// Draws a vertical marker line at the requested postion
-	if(logPlotMode == 0 || logPlotMode == 2)
-  	{      
-      if ((pos >= xmin) && (pos <= xmax))
-      { 
-			C1 = ( (pos-xmin) / (xmax-xmin) )* (right-left);
-			C1 = C1 + xmargin;  //Add margin offset
-			
-			setcolor(color);
-						
-			// Check we have an odd number (for symmetry)
-         if ( (width % 2) == 0 )
-         {
-				// Reduce width by 1 pixel
-				width -= 1;	
-			}	
-         int span = (width - 1) / 2.0;
-         
-         for(int i = -span; i < span+1; i++)
-			{
-				moveto(C1+i,top);
-				lineto(C1+i,bottom);
-			}
-						
-		}
-      
+	if(logPlotMode == 1 || logPlotMode == 3)
+   {
+      pos = log10(pos);
+
    }
+	      
+	if ((pos >= xmin) && (pos <= xmax))
+	{ 
+		C1 = ( (pos-xmin) / (xmax-xmin) )* (right-left);
+		C1 = C1 + xmargin;  //Add margin offset
+		
+		setcolor(color);
+					
+		// Check we have an odd number (for symmetry)
+		if ( (width % 2) == 0 )
+		{
+			// Reduce width by 1 pixel
+			width -= 1;	
+		}	
+		int span = (width - 1) / 2.0;
+		
+		for(int i = -span; i < span+1; i++)
+		{
+			moveto(C1+i,top);
+			lineto(C1+i,bottom);
+		}
+					
+	}
+      
+   
 	
 	
 }// drawVerticalMarker	
